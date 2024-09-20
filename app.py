@@ -147,7 +147,7 @@ def config():
                     raw_data = []
                     for row in data_source:
                         try:
-                            if row[0] != '':
+                            if row[0].value != '':
                                 site = [ row[0].value, row[1].value, row[2].value ]
                                 raw_data.append(site)
                         except:
