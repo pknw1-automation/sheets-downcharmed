@@ -60,7 +60,7 @@ jobs:
       run: |
         echo "$SSH_KEY" >> id_rsa
         chmod 600 id_rsa
-        sed -i 's/=\"assets/=\"https:\/\/dolly3.pknw1.co.uk\/assets/g' static/parsed/*html
+        sed -i 's/=\"assets/=\"https:\/\/preview.downcharmed.online\/assets/g' static/parsed/*html
         #scp -r -o "StrictHostKeyChecking=no" -P 69 -i ./id_rsa web/static/assets wwwxfr@ks5.pknw1.co.uk:/media/www/dolly/www/ 
         #scp -r -o "StrictHostKeyChecking=no" -P 69 -i ./id_rsa web/templates/rendered/index* wwwxfr@ks5.pknw1.co.uk:/media/www/dolly/www/
         #cd static
