@@ -30,7 +30,7 @@ app = Flask(__name__,
         template_folder='web/templates')
 
 
-document = client.open_by_key('1XPlTkHDci5QfDd6K_2Cu61GujArrr7FNJgY4Zb6avEU')
+document = client.open_by_key('1qMB0_7--xnhWX7rRn8TbiyDkKhcOZpzUuqEoXQjpYaA')
 home = document.worksheet('title','Config')
 #template = document.worksheet('title','Shows')
 #music_src = document.worksheet('title','Music')
@@ -71,6 +71,7 @@ def rm_files():
 
 @app.route('/home')
 @app.route('/config')
+@app.route('/error')
 def config():
     data = home.range("A9:F19")
     site_title = home.cell('B2').value
@@ -147,7 +148,8 @@ def config():
                     for row in data_source:
                         try:
                             if row[0] != '':
-                                raw_data.append(row)
+                                site = [ row[0].value, row[1].value, row[2].value ]
+                                raw_data.append(site)
                         except:
                             print("no")
                     page = {'name': i[0].value, 'title': i[2].value, 'subtitle': i[3].value, 'text': i[4].value, "data": raw_data }
@@ -267,8 +269,9 @@ def app_cd():
     raw_data = []
     for row in data_source:
         try:
-            if row[0] != '':
-                social_list.append(row)
+            if row[0].value != '':
+                site = [ row[0].value, row[1].value, row[2].value ]
+                social_list.append(site)
         except:
             print("error")
 

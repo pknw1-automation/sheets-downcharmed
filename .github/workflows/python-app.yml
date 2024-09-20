@@ -73,7 +73,7 @@ jobs:
         cd static
         tar -zcvf ../static-xfr.tgz *
         cd ..
-        scp -r -o "StrictHostKeyChecking=no" -P 69 -i ./id_rsa static-xfr.tgz wwwxfr@ks5.pknw1.co.uk:/media/www/dolly/www/
+        scp -r -o "StrictHostKeyChecking=no" -P 69 -i ./id_rsa static-xfr.tgz wwwxfr@ks5.pknw1.co.uk:/media/www/dolly/downcharmed/
 
     - name: unpack
       env:
