@@ -1,0 +1,95 @@
+  # This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Deploy Preview 
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [wwwpreview]
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: auth
+      env:
+        AUTH: ${{ secrets.AUTH }}
+      shell: bash
+      run: |
+          mkdir config
+          echo "$AUTH" >> config/auth.json
+          cat config/auth.json
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Build
+      continue-on-error: true
+      env:
+        HEADLESS: "42"
+        pushbullet_access_token: ${{ secrets.pushbullet_access_token }}
+      run: |
+        if ! [ -d web/templates/rendered ]; then mkdir -p web/templates/rendered; fi
+        python ./app.py&
+        sleep 10 && curl -L http://localhost:5000/ 
+
+    - name: Package
+      run: |
+        if ! [ -d static ]; then mkdir -p static/assets; fi
+        cp -R web/static/assets/* static/assets/
+        cp web/templates/rendered/*.html static/
+        if ! [ -d static/parsed ]; then mkdir static/parsed; fi
+        cp static/*html static/parsed/
+        echo $(date) > static/ver.html
+
+
+    - name: setup SSH
+      env:
+        SSH_KEY: ${{ secrets.SSH_KEY }}
+      run: |
+        echo "$SSH_KEY" >> id_rsa
+        chmod 600 id_rsa
+        sed -i 's/=\"assets/=\"https:\/\/preview.downcharmed.online\/assets/g' static/parsed/*html
+        #scp -r -o "StrictHostKeyChecking=no" -P 69 -i ./id_rsa web/static/assets wwwxfr@ks5.pknw1.co.uk:/media/www/dolly/www/ 
+        #scp -r -o "StrictHostKeyChecking=no" -P 69 -i ./id_rsa web/templates/rendered/index* wwwxfr@ks5.pknw1.co.uk:/media/www/dolly/www/
+        #cd static
+        #tar -zcvf ../static.tgz *
+
+    - name: xfr
+      env:
+        SSH_KEY: ${{ secrets.SSH_KEY }}
+      run: |
+        cd static
+        tar -zcvf ../static-xfr.tgz *
+        cd ..
+        scp -r -o "StrictHostKeyChecking=no" -P 69 -i ./id_rsa static-xfr.tgz wwwxfr@ks5.pknw1.co.uk:/media/www/downcharmed-releases/sheets/
+
+    - name: unpack
+      env:
+        SSH_KEY: ${{ secrets.SSH_KEY }}
+      run: |
+        ssh -p 69 -o "StrictHostKeyChecking=no" -i ./id_rsa wwwxfr@ks5.pknw1.co.uk -C 'cd ../downcharmed-releases/sheets && find . -type f -iname '*tgz' -mmin -10 -exec tar zxvf "{}" \;'
+
+        
+
+    - name: Archive
+      uses: actions/upload-artifact@v4
+      with:
+        name: static
+        path: static-xfr.tgz
+
+
+
+
+
