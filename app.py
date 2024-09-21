@@ -266,7 +266,6 @@ def app_cd():
     social_list = []
                     
     data_source = home.range('D23:F27')
-    raw_data = []
     for row in data_source:
         try:
             if row[0].value != '':
@@ -275,9 +274,24 @@ def app_cd():
         except:
             print("error")
 
+
+    nav_data = []
+
+    menu_data = home.range("A23:C27")
+    menu = {}
+    for opt in menu_data:
+        print("m")
+        print(opt[2])
+        try:
+            if opt[2].value == 'Enabled':
+                menu = {'name': opt[0].value, 'link': opt[1].value}
+                nav_data.append(menu)
+        except:
+            print("no")
+
     response = render_template('components/base.html')
     if  home.cell('B9').value == 'Enabled':
-        response = response + render_template('components/nav.html', page_data=page_data)
+        response = response + render_template('components/nav.html', page_data=page_data, data=nav_data)
     response = response + render_template('components/countdown.html', socials=social_list, due_date=due_date, page_data=page_data)
     if home.cell('B17').value == 'Enabled':
         response = response + render_template('components/contact_form.html', page_data=page_data)
